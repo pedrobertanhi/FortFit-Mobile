@@ -36,7 +36,7 @@ Fiquei responsável pelo fluxo visual de **checkout e pagamento**, incluindo:
 
 Nesta etapa, o pagamento é uma simulação acadêmica: o fluxo visual funciona, mas não realiza uma cobrança real.
 
-## Protótipo no Figma
+## Protótipo completo
 
 As telas seguem a identidade visual do FortFit: fundo grafite, cartões escuros, textos claros e verde-limão como cor de destaque.
 
@@ -46,18 +46,57 @@ As telas seguem a identidade visual do FortFit: fundo grafite, cartões escuros,
   </a>
 </p>
 
+### Fluxo do cliente
+
 <table>
   <tr>
-    <td align="center">
-      <img src="docs/figma-pagamento.svg" alt="Protótipo da tela de pagamento" width="360">
-    </td>
-    <td align="center">
-      <img src="docs/figma-confirmacao.svg" alt="Protótipo da tela de compra confirmada" width="360">
-    </td>
+    <td align="center"><img src="docs/figma-login.svg" alt="Tela de login" width="300"></td>
+    <td align="center"><img src="docs/figma-cadastro-usuario.svg" alt="Tela de cadastro do usuário" width="300"></td>
   </tr>
   <tr>
-    <td align="center"><strong>Tela de pagamento</strong></td>
-    <td align="center"><strong>Compra confirmada</strong></td>
+    <td align="center"><strong>Login</strong></td>
+    <td align="center"><strong>Cadastro do usuário</strong></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/figma-catalogo.svg" alt="Catálogo de produtos" width="300"></td>
+    <td align="center"><img src="docs/figma-detalhes-produto.svg" alt="Detalhes do produto" width="300"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Catálogo</strong></td>
+    <td align="center"><strong>Detalhes do produto</strong></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/figma-carrinho.svg" alt="Carrinho de compras" width="300"></td>
+    <td align="center"><img src="docs/figma-pagamento.svg" alt="Tela de pagamento" width="300"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Carrinho</strong></td>
+    <td align="center"><strong>Pagamento</strong></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="docs/figma-confirmacao.svg" alt="Compra confirmada" width="300"></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><strong>Compra confirmada</strong></td>
+  </tr>
+</table>
+
+### Área do vendedor
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/figma-dashboard-vendedor.svg" alt="Dashboard do vendedor" width="300"></td>
+    <td align="center"><img src="docs/figma-produtos-vendedor.svg" alt="Produtos do vendedor" width="300"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Dashboard do vendedor</strong></td>
+    <td align="center"><strong>Gerenciamento de produtos</strong></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="docs/figma-cadastro-produto.svg" alt="Cadastro de produto" width="300"></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><strong>Cadastro de produto</strong></td>
   </tr>
 </table>
 
@@ -65,7 +104,7 @@ As telas seguem a identidade visual do FortFit: fundo grafite, cartões escuros,
 
 - cadastro e login de usuários;
 - catálogo de suplementos e itens fitness;
-- detalhes dos produtos;
+- visualização dos detalhes dos produtos;
 - carrinho de compras;
 - checkout e confirmação do pedido;
 - cadastro e gerenciamento de produtos;
