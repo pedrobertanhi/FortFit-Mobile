@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="docs/banner-fortfit.svg" alt="Capa do projeto FortFit Mobile" width="100%">
-</p>
-
 <h1 align="center">FortFit Mobile</h1>
 
 <p align="center">
@@ -14,6 +10,10 @@
   <img alt="Status" src="https://img.shields.io/badge/status-em%20desenvolvimento-9CFF2E?style=for-the-badge&labelColor=171D1A">
   <img alt="React Native" src="https://img.shields.io/badge/React%20Native-Expo-9CFF2E?style=for-the-badge&labelColor=171D1A">
   <img alt="Projeto acadêmico" src="https://img.shields.io/badge/projeto-acad%C3%AAmico-9CFF2E?style=for-the-badge&labelColor=171D1A">
+</p>
+
+<p align="center">
+  <img src="docs/banner-fortfit.svg" alt="Capa do projeto FortFit Mobile" width="100%">
 </p>
 
 ## Sobre o projeto
