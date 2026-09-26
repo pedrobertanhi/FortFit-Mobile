@@ -36,6 +36,15 @@ Fiquei responsável pelo fluxo visual de **checkout e pagamento**, incluindo:
 
 Nesta etapa, o pagamento é uma simulação acadêmica: o fluxo visual funciona, mas não realiza uma cobrança real.
 
+## Código da minha contribuição
+
+A implementação do checkout já está disponível neste repositório:
+
+- [Tela de pagamento](src/telas/pagamento/pagamento.js)
+- [Tela de confirmação da compra](src/telas/pagamento/confirmacaoPagamento.js)
+
+Esses arquivos recebem os dados do produto pela navegação, validam o formulário e concluem o fluxo com a confirmação e o número do pedido.
+
 ## Protótipo completo
 
 As telas seguem a identidade visual do FortFit: fundo grafite, cartões escuros, textos claros e verde-limão como cor de destaque.
@@ -121,11 +130,11 @@ As telas seguem a identidade visual do FortFit: fundo grafite, cartões escuros,
 
 ## Situação atual
 
-O projeto está em desenvolvimento durante o semestre. Por enquanto, este repositório reúne a apresentação do trabalho, o protótipo e o registro da minha contribuição. O código completo será adicionado depois da integração das partes desenvolvidas pela equipe.
+O projeto está em desenvolvimento durante o semestre. Este repositório já reúne a apresentação, o protótipo e o código do checkout desenvolvido por mim. A versão consolidada do aplicativo será adicionada após a integração das partes da equipe.
 
 ## Projeto da equipe
 
-O desenvolvimento em grupo está sendo organizado no repositório:
+O desenvolvimento em grupo está sendo organizado no repositório oficial:
 
 [FortFit-MobileProject/FortFit](https://github.com/FortFit-MobileProject/FortFit)
 
