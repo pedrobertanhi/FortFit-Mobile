@@ -8,6 +8,8 @@
   Aplicativo móvel de e-commerce fitness desenvolvido em React Native e Expo.
 </p>
 
+> 🚧 **Projeto em andamento:** o FortFit ainda está em desenvolvimento. As funcionalidades, telas e a estrutura do código poderão receber alterações até a integração e entrega final do projeto.
+
 <p align="center">
   <img alt="Status" src="https://img.shields.io/badge/status-em%20desenvolvimento-9CFF2E?style=for-the-badge&labelColor=171D1A">
   <img alt="React Native" src="https://img.shields.io/badge/React%20Native-Expo-9CFF2E?style=for-the-badge&labelColor=171D1A">
