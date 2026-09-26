@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1800" viewBox="0 0 900 1800">
+<defs><radialGradient id="g"><stop stop-color="#9CFF2E" stop-opacity=".16"/><stop offset="1" stop-color="#0E1210" stop-opacity="0"/></radialGradient><filter id="gl"><feGaussianBlur stdDeviation="12" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect width="900" height="1800" fill="#0E1210"/><circle cx="450" cy="650" r="430" fill="url(#g)"/>
+<rect x="0" y="0" width="900" height="118" fill="#171D1A"/><text x="450" y="73" text-anchor="middle" font-family="Arial" font-size="34" font-weight="700" fill="#F5F7F6">Pedido confirmado</text>
+<g transform="translate(300 265)" filter="url(#gl)"><circle cx="150" cy="150" r="142" fill="#9CFF2E"/><path d="M82 151l45 47 94-104" fill="none" stroke="#111614" stroke-width="25" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="450" y="670" text-anchor="middle" font-family="Arial" font-size="50" font-weight="800" fill="#F5F7F6">Compra realizada!</text>
+<text x="450" y="730" text-anchor="middle" font-family="Arial" font-size="26" fill="#AAB6B0">Obrigado por comprar com a FortFit.</text>
+<text x="450" y="768" text-anchor="middle" font-family="Arial" font-size="26" fill="#AAB6B0">Seu pedido foi recebido com sucesso.</text>
+<rect x="105" y="840" width="690" height="230" rx="30" fill="#1B2420" stroke="#334039" stroke-width="2"/>
+<text x="450" y="910" text-anchor="middle" font-family="Arial" font-size="22" fill="#91A098">NÚMERO DO PEDIDO</text><text x="450" y="972" text-anchor="middle" font-family="Arial" font-size="46" font-weight="800" fill="#9CFF2E">#FF-583214</text><text x="450" y="1025" text-anchor="middle" font-family="Arial" font-size="22" fill="#AAB6B0">Guarde este número para acompanhar a compra</text>
+<rect x="105" y="1135" width="690" height="96" rx="24" fill="#9CFF2E"/><text x="450" y="1195" text-anchor="middle" font-family="Arial" font-size="28" font-weight="800" fill="#111614">Voltar para o início</text>
+<rect x="105" y="1260" width="690" height="96" rx="24" fill="#171D1A" stroke="#4B5A52" stroke-width="2"/><text x="450" y="1320" text-anchor="middle" font-family="Arial" font-size="28" font-weight="700" fill="#F5F7F6">Ver meus pedidos</text>
+<text x="450" y="1688" text-anchor="middle" font-family="Arial" font-size="22" fill="#7F9188">Número do pedido gerado automaticamente</text>
+<text x="450" y="1732" text-anchor="middle" font-family="Arial" font-size="21" fill="#7F9188">Protótipo da confirmação • Figma</text>
+</svg>

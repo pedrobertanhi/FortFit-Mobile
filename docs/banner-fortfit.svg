@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111614"/><stop offset="1" stop-color="#202925"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect width="1200" height="360" rx="28" fill="url(#bg)"/>
+<circle cx="1030" cy="72" r="180" fill="#9CFF2E" opacity=".07"/><circle cx="1130" cy="300" r="210" fill="#9CFF2E" opacity=".04"/>
+<g transform="translate(74 80)"><rect x="0" y="0" width="190" height="190" rx="44" fill="#9CFF2E"/><path d="M50 98h90M66 72v52M124 72v52M42 82v32M148 82v32" stroke="#111614" stroke-width="14" stroke-linecap="round"/><path d="M95 45l18 36H77z" fill="#111614"/></g>
+<text x="310" y="150" font-family="Arial, sans-serif" font-size="72" font-weight="800" fill="#F7F9F8">FortFit <tspan fill="#9CFF2E">Mobile</tspan></text>
+<text x="314" y="205" font-family="Arial, sans-serif" font-size="27" fill="#BAC5BF">E-commerce fitness para pequenos empreendedores</text>
+<rect x="314" y="246" width="232" height="44" rx="22" fill="#9CFF2E"/><text x="430" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" font-weight="700" fill="#111614">REACT NATIVE + EXPO</text>
+<text x="570" y="275" font-family="Arial, sans-serif" font-size="18" fill="#7F9188">PROJETO INTEGRADOR</text>
+</svg>
