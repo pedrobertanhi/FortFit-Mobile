@@ -138,7 +138,7 @@ O projeto está em desenvolvimento durante o semestre. Este repositório já re�
 
 O desenvolvimento em grupo está sendo organizado no repositório oficial:
 
-[[FortFit-MobileProject/FortFit-Mobile](https://github.com/FortFit-MobileProject/FortFit)
+[FortFit-MobileProject/FortFit-Mobile](https://github.com/FortFit-MobileProject/FortFit)
 
 ## Autor
 
