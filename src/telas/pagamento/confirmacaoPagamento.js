@@ -83,7 +83,10 @@ export default function ConfirmacaoPagamentoScreen(props) {
 
     function voltarParaLoja() {
         if (navigation) {
-            navigation.navigate('Login');
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'ListaProdutosCliente' }],
+            });
         }
     }
 

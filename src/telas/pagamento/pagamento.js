@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../../constants/theme';
+import { useLoja } from '../../context/LojaContext';
 
 const PRODUTO_EXEMPLO = {
     idProduto: 1,
@@ -115,6 +116,7 @@ function EtapasCheckout() {
 export default function PagamentoScreen(props) {
     const navigation = props.navigation;
     const produtoRecebido = props.route?.params?.produto;
+    const { limparCarrinho } = useLoja();
 
     const produto = {
         idProduto:
@@ -275,6 +277,7 @@ export default function PagamentoScreen(props) {
         }
 
         const numeroPedido = gerarNumeroPedido();
+        limparCarrinho();
 
         if (navigation) {
             navigation.navigate('PagamentoConfirmado', {
