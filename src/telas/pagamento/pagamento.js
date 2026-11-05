@@ -116,7 +116,7 @@ function EtapasCheckout() {
 export default function PagamentoScreen(props) {
     const navigation = props.navigation;
     const produtoRecebido = props.route?.params?.produto;
-    const { limparCarrinho } = useLoja();
+    const { finalizarPedido } = useLoja();
 
     const produto = {
         idProduto:
@@ -238,7 +238,7 @@ export default function PagamentoScreen(props) {
         }
     }
 
-    function finalizarPagamento() {
+    async function finalizarPagamento() {
         const numerosCartao = numeroCartao.replace(
             /\D/g,
             ''
@@ -277,14 +277,32 @@ export default function PagamentoScreen(props) {
         }
 
         const numeroPedido = gerarNumeroPedido();
-        limparCarrinho();
 
-        if (navigation) {
-            navigation.navigate('PagamentoConfirmado', {
+        try {
+            await finalizarPedido({
                 numeroPedido,
-                produto,
-                valorTotal,
+                formaPagamento: tipoCartao,
+                endereco: {
+                    cep,
+                    rua,
+                    bairro,
+                    numero: numeroEndereco,
+                    complemento,
+                },
             });
+
+            if (navigation) {
+                navigation.navigate('PagamentoConfirmado', {
+                    numeroPedido,
+                    produto,
+                    valorTotal,
+                });
+            }
+        } catch (erro) {
+            Alert.alert(
+                'Não foi possível finalizar',
+                'Tente novamente em alguns instantes.'
+            );
         }
     }
 
