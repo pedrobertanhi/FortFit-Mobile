@@ -15,7 +15,8 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-svg": "15.15.4",
-    "react-native-web": "^0.21.2"
+    "react-native-web": "^0.21.2",
+    "expo-sqlite": "~57.0.4"
   },
   "scripts": {
     "start": "expo start",

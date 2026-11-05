@@ -1,76 +1,113 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
-import { PRODUTOS_INICIAIS } from '../data/produtos';
+import React, {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
+import {
+    adicionarItemAoCarrinho,
+    alterarQuantidadeNoCarrinho,
+    atualizarProdutoNoBanco,
+    criarProduto,
+    excluirProdutoDoBanco,
+    inicializarBanco,
+    limparCarrinhoNoBanco,
+    listarCarrinho,
+    listarProdutos,
+    registrarPedido,
+    removerItemDoCarrinho,
+} from '../database/database';
 
 const LojaContext = createContext(null);
 
 export function LojaProvider({ children }) {
-    const [produtos, setProdutos] = useState(PRODUTOS_INICIAIS);
+    const [produtos, setProdutos] = useState([]);
     const [carrinho, setCarrinho] = useState([]);
+    const [carregando, setCarregando] = useState(true);
 
-    function adicionarProduto(dados) {
-        const novoProduto = {
-            ...dados,
-            id: String(Date.now()),
-            foto: dados.foto ?? null,
-        };
-        setProdutos((listaAtual) => [novoProduto, ...listaAtual]);
-    }
+    const carregarDados = useCallback(async () => {
+        const [produtosDoBanco, carrinhoDoBanco] = await Promise.all([
+            listarProdutos(),
+            listarCarrinho(),
+        ]);
 
-    function atualizarProduto(id, dados) {
-        setProdutos((listaAtual) =>
-            listaAtual.map((produto) =>
-                produto.id === id ? { ...produto, ...dados, id } : produto
-            )
-        );
-    }
+        setProdutos(produtosDoBanco);
+        setCarrinho(carrinhoDoBanco);
+    }, []);
 
-    function excluirProduto(id) {
-        setProdutos((listaAtual) => listaAtual.filter((produto) => produto.id !== id));
-        setCarrinho((listaAtual) => listaAtual.filter((item) => item.produto.id !== id));
-    }
-
-    function adicionarAoCarrinho(produto, quantidade = 1) {
-        if (!produto || produto.estoque === 0) return;
-
-        setCarrinho((listaAtual) => {
-            const itemExistente = listaAtual.find((item) => item.produto.id === produto.id);
-            if (itemExistente) {
-                return listaAtual.map((item) =>
-                    item.produto.id === produto.id
-                        ? {
-                            ...item,
-                            quantidade: Math.min(item.quantidade + quantidade, produto.estoque),
-                        }
-                        : item
-                );
+    useEffect(() => {
+        async function prepararLoja() {
+            try {
+                await inicializarBanco();
+                await carregarDados();
+            } catch (erro) {
+                console.error('Não foi possível preparar o banco do FortFit.', erro);
+            } finally {
+                setCarregando(false);
             }
-            return [...listaAtual, { produto, quantidade: Math.min(quantidade, produto.estoque) }];
+        }
+
+        prepararLoja();
+    }, [carregarDados]);
+
+    async function adicionarProduto(dados) {
+        await criarProduto({
+            ...dados,
+            marca: dados.marca ?? 'FortFit',
         });
+        await carregarDados();
     }
 
-    function alterarQuantidade(id, quantidade) {
-        if (quantidade <= 0) {
-            removerDoCarrinho(id);
+    async function atualizarProduto(id, dados) {
+        await atualizarProdutoNoBanco(id, dados);
+        await carregarDados();
+    }
+
+    async function excluirProduto(id) {
+        await excluirProdutoDoBanco(id);
+        await carregarDados();
+    }
+
+    async function adicionarAoCarrinho(produto, quantidade = 1) {
+        if (!produto || produto.estoque === 0) {
             return;
         }
-        setCarrinho((listaAtual) =>
-            listaAtual.map((item) =>
-                item.produto.id === id
-                    ? { ...item, quantidade: Math.min(quantidade, item.produto.estoque) }
-                    : item
-            )
-        );
+
+        await adicionarItemAoCarrinho(produto, quantidade);
+        await carregarDados();
     }
 
-    function removerDoCarrinho(id) {
-        setCarrinho((listaAtual) => listaAtual.filter((item) => item.produto.id !== id));
+    async function alterarQuantidade(id, quantidade) {
+        await alterarQuantidadeNoCarrinho(id, quantidade);
+        await carregarDados();
     }
 
-    function limparCarrinho() {
-        setCarrinho([]);
+    async function removerDoCarrinho(id) {
+        await removerItemDoCarrinho(id);
+        await carregarDados();
     }
 
-    const quantidadeCarrinho = carrinho.reduce((total, item) => total + item.quantidade, 0);
+    async function limparCarrinho() {
+        await limparCarrinhoNoBanco();
+        await carregarDados();
+    }
+
+    async function finalizarPedido(dados) {
+        const pedidoRegistrado = await registrarPedido(dados);
+
+        if (pedidoRegistrado) {
+            await carregarDados();
+        }
+
+        return pedidoRegistrado;
+    }
+
+    const quantidadeCarrinho = carrinho.reduce(
+        (total, item) => total + item.quantidade,
+        0
+    );
     const totalCarrinho = carrinho.reduce(
         (total, item) => total + item.produto.preco * item.quantidade,
         0
@@ -80,6 +117,7 @@ export function LojaProvider({ children }) {
         () => ({
             produtos,
             carrinho,
+            carregando,
             quantidadeCarrinho,
             totalCarrinho,
             adicionarProduto,
@@ -89,8 +127,15 @@ export function LojaProvider({ children }) {
             alterarQuantidade,
             removerDoCarrinho,
             limparCarrinho,
+            finalizarPedido,
         }),
-        [produtos, carrinho, quantidadeCarrinho, totalCarrinho]
+        [
+            produtos,
+            carrinho,
+            carregando,
+            quantidadeCarrinho,
+            totalCarrinho,
+        ]
     );
 
     return <LojaContext.Provider value={valor}>{children}</LojaContext.Provider>;
@@ -98,9 +143,10 @@ export function LojaProvider({ children }) {
 
 export function useLoja() {
     const contexto = useContext(LojaContext);
+
     if (!contexto) {
         throw new Error('useLoja deve ser utilizado dentro de LojaProvider');
     }
+
     return contexto;
 }
-

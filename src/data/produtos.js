@@ -6,6 +6,16 @@ const camiseta = require('../../assets/images/produtos/camiseta.webp');
 const proteinaChocolate = require('../../assets/images/produtos/proteinaChocolate.webp');
 const halteres = require('../../assets/images/produtos/halteres_2kg.webp');
 
+export const IMAGENS_PRODUTOS = {
+    wheyOn,
+    wheyPerformance,
+    creatina,
+    strap,
+    camiseta,
+    proteinaChocolate,
+    halteres,
+};
+
 export const PRODUTOS_INICIAIS = [
     {
         id: '1',
@@ -15,7 +25,7 @@ export const PRODUTOS_INICIAIS = [
         descricao: 'Proteína concentrada para complementar a alimentação e apoiar a recuperação muscular.',
         preco: 129.9,
         estoque: 42,
-        foto: wheyPerformance,
+        fotoChave: 'wheyPerformance',
     },
     {
         id: '2',
@@ -25,7 +35,7 @@ export const PRODUTOS_INICIAIS = [
         descricao: 'Creatina monohidratada para auxiliar no ganho de força e desempenho durante os treinos.',
         preco: 79.9,
         estoque: 15,
-        foto: creatina,
+        fotoChave: 'creatina',
     },
     {
         id: '3',
@@ -35,7 +45,7 @@ export const PRODUTOS_INICIAIS = [
         descricao: 'Strap resistente para melhorar a pegada em exercícios de puxada.',
         preco: 49.9,
         estoque: 8,
-        foto: strap,
+        fotoChave: 'strap',
     },
     {
         id: '4',
@@ -45,7 +55,7 @@ export const PRODUTOS_INICIAIS = [
         descricao: 'Camiseta leve com tecido de secagem rápida para treinos intensos.',
         preco: 59.9,
         estoque: 0,
-        foto: camiseta,
+        fotoChave: 'camiseta',
     },
     {
         id: '5',
@@ -55,7 +65,7 @@ export const PRODUTOS_INICIAIS = [
         descricao: 'Barra proteica sabor chocolate para um lanche prático.',
         preco: 12.9,
         estoque: 60,
-        foto: proteinaChocolate,
+        fotoChave: 'proteinaChocolate',
     },
     {
         id: '6',
@@ -65,7 +75,7 @@ export const PRODUTOS_INICIAIS = [
         descricao: 'Par de halteres de 2kg para exercícios em casa.',
         preco: 89.9,
         estoque: 5,
-        foto: halteres,
+        fotoChave: 'halteres',
     },
     {
         id: '7',
@@ -75,9 +85,11 @@ export const PRODUTOS_INICIAIS = [
         descricao: 'Proteína isolada com alta concentração proteica e rápida absorção.',
         preco: 149.9,
         estoque: 30,
-        foto: wheyOn,
+        fotoChave: 'wheyOn',
     },
-];
+].map((produto) => ({
+    ...produto,
+    foto: IMAGENS_PRODUTOS[produto.fotoChave],
+}));
 
 export const CATEGORIAS = ['Todos', 'Suplementos', 'Roupas', 'Acessórios', 'Equipamentos'];
-
