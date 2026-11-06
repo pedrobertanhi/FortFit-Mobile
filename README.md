@@ -111,6 +111,25 @@ As telas seguem a identidade visual do FortFit: fundo grafite, cartões escuros,
   </tr>
 </table>
 
+### Novas telas e interações
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/tela-confirmacao-cadastro.svg" alt="Confirmação de cadastro" width="250"></td>
+    <td align="center"><img src="docs/tela-meus-pedidos.svg" alt="Meus pedidos" width="250"></td>
+    <td align="center"><img src="docs/tela-excluir-conta.svg" alt="Exclusão de conta" width="250"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Cadastro concluído</strong></td>
+    <td align="center"><strong>Meus pedidos</strong></td>
+    <td align="center"><strong>Exclusão da conta</strong></td>
+  </tr>
+</table>
+
+### Persistência de dados
+
+O aplicativo mantém usuários, sessões, produtos, carrinho e pedidos no **SQLite** nas plataformas nativas. Na versão web, a mesma estrutura é preservada no armazenamento local do navegador. O cadastro de produtos aguarda a gravação no banco antes de confirmar a operação na interface.
+
 ## Funcionalidades planejadas
 
 - cadastro e login de usuários;
@@ -138,7 +157,7 @@ O projeto está em desenvolvimento durante o semestre. Este repositório já re�
 
 O desenvolvimento em grupo está sendo organizado no repositório oficial:
 
-[FortFit-MobileProject/FortFit-Mobile](https://github.com/FortFit-MobileProject/FortFit)
+[FortFit-MobileProject/FortFit](https://github.com/FortFit-MobileProject/FortFit)
 
 ## Autor
 
