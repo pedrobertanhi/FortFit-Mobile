@@ -128,7 +128,7 @@ As telas seguem a identidade visual do FortFit: fundo grafite, cartões escuros,
 
 ### Persistência de dados
 
-O aplicativo mantém usuários, sessões, produtos, carrinho e pedidos no **SQLite** nas plataformas nativas. Na versão web, a mesma estrutura é preservada no armazenamento local do navegador. O cadastro de produtos aguarda a gravação no banco antes de confirmar a operação na interface.
+O aplicativo mantém usuários, sessões, produtos, carrinho e pedidos exclusivamente no **SQLite**. O cadastro de produtos aguarda a gravação no banco antes de confirmar a operação na interface. Para utilizar o banco, execute o projeto pelo Expo Go ou em um emulador Android.
 
 ## Funcionalidades planejadas
 
