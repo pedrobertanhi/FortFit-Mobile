@@ -1,5 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { COLORS } from '../constants/theme';
 import LoginScreen from '../telas/login/login';
 import CadastroScreen from '../telas/login/cadastro/cadastro';
 import AreaVendedorScreen from '../telas/login/areaVendedor/areaVendedor';
@@ -14,5 +15,54 @@ import CarrinhoScreen from '../telas/carrinho/carrinho';
 import PerfilScreen from '../telas/perfil/perfil';
 import ListaProdutosAdminScreen from '../telas/listaProdutosAdmin/listaProdutosAdmin';
 import CadastroProdutoScreen from '../telas/cadastroProduto/cadastroProduto';
-const Stack=createNativeStackNavigator();
-export default function AuthStack({initialRouteName='Login'}){return <Stack.Navigator initialRouteName={initialRouteName} screenOptions={{headerShown:false}}><Stack.Screen name="Login" component={LoginScreen}/><Stack.Screen name="Cadastro" component={CadastroScreen}/><Stack.Screen name="EsqueciSenha" component={ValidarEmailScreen}/><Stack.Screen name="ValidarCodigo" component={ValidarCodigoScreen}/><Stack.Screen name="RedefinirSenha" component={ResetScreen}/><Stack.Screen name="AreaVendedor" component={AreaVendedorScreen}/><Stack.Screen name="ListaProdutosCliente" component={ListaProdutosClienteScreen}/><Stack.Screen name="DetalheProduto" component={DetalhesProdutoScreen}/><Stack.Screen name="Carrinho" component={CarrinhoScreen}/><Stack.Screen name="Perfil" component={PerfilScreen}/><Stack.Screen name="ListaProdutosAdmin" component={ListaProdutosAdminScreen}/><Stack.Screen name="CadastroProduto" component={CadastroProdutoScreen}/><Stack.Screen name="Pagamento" component={PagamentoScreen}/><Stack.Screen name="PagamentoConfirmado" component={ConfirmacaoPagamentoScreen}/></Stack.Navigator>}
+
+const Stack = createNativeStackNavigator();
+const TELAS_COM_RETORNO = new Set([
+    'DetalheProduto',
+    'Carrinho',
+    'ListaProdutosAdmin',
+    'CadastroProduto',
+    'Pagamento',
+    'PagamentoConfirmado',
+]);
+const TITULOS = {
+    DetalheProduto: 'Detalhes do produto',
+    Carrinho: 'Carrinho',
+    ListaProdutosAdmin: 'Gerenciar produtos',
+    CadastroProduto: 'Produto',
+    Pagamento: 'Pagamento',
+    PagamentoConfirmado: 'Pedido confirmado',
+};
+
+export default function AuthStack({ initialRouteName = 'Login' }) {
+    return (
+        <Stack.Navigator
+            initialRouteName={initialRouteName}
+            screenOptions={({ route }) => ({
+                headerShown: TELAS_COM_RETORNO.has(route.name),
+                headerTitle: TITULOS[route.name],
+                headerStyle: { backgroundColor: COLORS.background },
+                headerTintColor: COLORS.text,
+                headerTitleStyle: { fontWeight: '700' },
+                headerBackTitle: 'Voltar',
+                headerShadowVisible: false,
+                contentStyle: { backgroundColor: COLORS.background },
+            })}
+        >
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Cadastro" component={CadastroScreen} />
+            <Stack.Screen name="EsqueciSenha" component={ValidarEmailScreen} />
+            <Stack.Screen name="ValidarCodigo" component={ValidarCodigoScreen} />
+            <Stack.Screen name="RedefinirSenha" component={ResetScreen} />
+            <Stack.Screen name="AreaVendedor" component={AreaVendedorScreen} />
+            <Stack.Screen name="ListaProdutosCliente" component={ListaProdutosClienteScreen} />
+            <Stack.Screen name="DetalheProduto" component={DetalhesProdutoScreen} />
+            <Stack.Screen name="Carrinho" component={CarrinhoScreen} />
+            <Stack.Screen name="Perfil" component={PerfilScreen} />
+            <Stack.Screen name="ListaProdutosAdmin" component={ListaProdutosAdminScreen} />
+            <Stack.Screen name="CadastroProduto" component={CadastroProdutoScreen} />
+            <Stack.Screen name="Pagamento" component={PagamentoScreen} />
+            <Stack.Screen name="PagamentoConfirmado" component={ConfirmacaoPagamentoScreen} />
+        </Stack.Navigator>
+    );
+}
