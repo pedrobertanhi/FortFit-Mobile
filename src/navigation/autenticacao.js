@@ -15,23 +15,14 @@ import CarrinhoScreen from '../telas/carrinho/carrinho';
 import PerfilScreen from '../telas/perfil/perfil';
 import ListaProdutosAdminScreen from '../telas/listaProdutosAdmin/listaProdutosAdmin';
 import CadastroProdutoScreen from '../telas/cadastroProduto/cadastroProduto';
+import MeusPedidosScreen from '../telas/pedidos/meusPedidos';
 
 const Stack = createNativeStackNavigator();
 const TELAS_COM_RETORNO = new Set([
-    'DetalheProduto',
-    'Carrinho',
     'ListaProdutosAdmin',
-    'CadastroProduto',
-    'Pagamento',
-    'PagamentoConfirmado',
 ]);
 const TITULOS = {
-    DetalheProduto: 'Detalhes do produto',
-    Carrinho: 'Carrinho',
     ListaProdutosAdmin: 'Gerenciar produtos',
-    CadastroProduto: 'Produto',
-    Pagamento: 'Pagamento',
-    PagamentoConfirmado: 'Pedido confirmado',
 };
 
 export default function AuthStack({ initialRouteName = 'Login' }) {
@@ -59,6 +50,7 @@ export default function AuthStack({ initialRouteName = 'Login' }) {
             <Stack.Screen name="DetalheProduto" component={DetalhesProdutoScreen} />
             <Stack.Screen name="Carrinho" component={CarrinhoScreen} />
             <Stack.Screen name="Perfil" component={PerfilScreen} />
+            <Stack.Screen name="MeusPedidos" component={MeusPedidosScreen} />
             <Stack.Screen name="ListaProdutosAdmin" component={ListaProdutosAdminScreen} />
             <Stack.Screen name="CadastroProduto" component={CadastroProdutoScreen} />
             <Stack.Screen name="Pagamento" component={PagamentoScreen} />
