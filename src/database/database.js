@@ -100,6 +100,17 @@ export async function encerrarSessao() {
     await db.runAsync('DELETE FROM sessao WHERE id = 1');
 }
 
+export async function excluirContaUsuario(usuarioId) {
+    const db = await obterBanco();
+    await db.withTransactionAsync(async () => {
+        await db.runAsync('DELETE FROM pedido_itens WHERE pedido_id IN (SELECT id FROM pedidos WHERE usuario_id = ?)', usuarioId);
+        await db.runAsync('DELETE FROM pedidos WHERE usuario_id = ?', usuarioId);
+        await db.runAsync('DELETE FROM sessao WHERE usuario_id = ?', usuarioId);
+        await db.runAsync('DELETE FROM usuarios WHERE id = ?', usuarioId);
+        await db.runAsync('DELETE FROM carrinho_itens');
+    });
+}
+
 export async function emailEstaCadastrado(email) {
     const db = await obterBanco();
     const usuario = await db.getFirstAsync('SELECT id FROM usuarios WHERE email = ?', normalizarEmail(email));

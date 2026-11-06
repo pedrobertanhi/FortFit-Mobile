@@ -152,6 +152,15 @@ export async function encerrarSessao() {
     salvarBanco(banco);
 }
 
+export async function excluirContaUsuario(usuarioId) {
+    const banco = lerBanco();
+    banco.usuarios = banco.usuarios.filter((usuario) => usuario.id !== usuarioId);
+    banco.pedidos = banco.pedidos.filter((pedido) => pedido.usuario_id !== usuarioId);
+    banco.carrinho = [];
+    if (banco.sessao === usuarioId) banco.sessao = null;
+    salvarBanco(banco);
+}
+
 export async function emailEstaCadastrado(email) {
     return lerBanco().usuarios.some((usuario) => usuario.email === emailNormalizado(email));
 }
