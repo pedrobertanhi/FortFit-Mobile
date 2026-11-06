@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { adicionarItemAoCarrinho, alterarQuantidadeNoCarrinho, atualizarProdutoNoBanco, atualizarSenhaUsuario, buscarSessaoAtual, cadastrarUsuario as cadastrarUsuarioNoBanco, criarProduto, emailEstaCadastrado, encerrarSessao, excluirProdutoDoBanco, inicializarBanco, limparCarrinhoNoBanco, listarCarrinho, listarProdutos, registrarPedido, removerItemDoCarrinho, autenticarUsuario } from '../database/database';
+import { adicionarItemAoCarrinho, alterarQuantidadeNoCarrinho, atualizarProdutoNoBanco, atualizarSenhaUsuario, buscarSessaoAtual, cadastrarUsuario as cadastrarUsuarioNoBanco, criarProduto, emailEstaCadastrado, encerrarSessao, excluirProdutoDoBanco, inicializarBanco, limparCarrinhoNoBanco, listarCarrinho, listarProdutos, listarPedidosDoUsuario, registrarPedido, removerItemDoCarrinho, autenticarUsuario } from '../database/database';
 
 const LojaContext = createContext(null);
 
@@ -22,10 +22,11 @@ export function LojaProvider({ children }) {
     async function alterarQuantidade(id, quantidade) { await alterarQuantidadeNoCarrinho(id, quantidade); await carregarDados(); }
     async function removerDoCarrinho(id) { await removerItemDoCarrinho(id); await carregarDados(); }
     async function limparCarrinho() { await limparCarrinhoNoBanco(); await carregarDados(); }
-    async function finalizarPedido(dados) { const pedidoRegistrado = await registrarPedido(dados); if (pedidoRegistrado) await carregarDados(); return pedidoRegistrado; }
+    async function finalizarPedido(dados) { const pedidoRegistrado = await registrarPedido({ ...dados, usuarioId: usuario?.id }); if (pedidoRegistrado) await carregarDados(); return pedidoRegistrado; }
+    async function listarMeusPedidos() { return usuario ? listarPedidosDoUsuario(usuario.id) : []; }
     const quantidadeCarrinho = carrinho.reduce((total, item) => total + item.quantidade, 0);
     const totalCarrinho = carrinho.reduce((total, item) => total + item.produto.preco * item.quantidade, 0);
-    const valor = useMemo(() => ({ produtos, carrinho, usuario, carregando, quantidadeCarrinho, totalCarrinho, entrar, cadastrarUsuario, sair, verificarEmailCadastrado, redefinirSenha, adicionarProduto, atualizarProduto, excluirProduto, adicionarAoCarrinho, alterarQuantidade, removerDoCarrinho, limparCarrinho, finalizarPedido }), [produtos, carrinho, usuario, carregando, quantidadeCarrinho, totalCarrinho]);
+    const valor = useMemo(() => ({ produtos, carrinho, usuario, carregando, quantidadeCarrinho, totalCarrinho, entrar, cadastrarUsuario, sair, verificarEmailCadastrado, redefinirSenha, adicionarProduto, atualizarProduto, excluirProduto, adicionarAoCarrinho, alterarQuantidade, removerDoCarrinho, limparCarrinho, finalizarPedido, listarMeusPedidos }), [produtos, carrinho, usuario, carregando, quantidadeCarrinho, totalCarrinho]);
     return <LojaContext.Provider value={valor}>{children}</LojaContext.Provider>;
 }
 export function useLoja() { const contexto = useContext(LojaContext); if (!contexto) throw new Error('useLoja deve ser utilizado dentro de LojaProvider'); return contexto; }

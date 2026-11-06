@@ -112,7 +112,7 @@ export async function registrarPedido(dados) {
     const itens = await listarCarrinho();
     if (!itens.length) return false;
     const total = itens.reduce((acumulado, item) => acumulado + item.produto.preco * item.quantidade, 0);
-    banco.pedidos.push({ ...dados, id: dados.numeroPedido, criado_em: new Date().toISOString(), total, itens });
+    banco.pedidos.push({ ...dados, id: dados.numeroPedido, usuario_id: dados.usuarioId, criado_em: new Date().toISOString(), total, itens });
     banco.produtos = banco.produtos.map((produto) => {
         const item = itens.find((atual) => atual.produto.id === produto.id);
         return item ? { ...produto, estoque: Math.max(produto.estoque - item.quantidade, 0) } : produto;
@@ -163,4 +163,10 @@ export async function atualizarSenhaUsuario(email, senha) {
     usuario.senha = senha;
     salvarBanco(banco);
     return true;
+}
+
+export async function listarPedidosDoUsuario(usuarioId) {
+    return lerBanco().pedidos
+        .filter((pedido) => pedido.usuario_id === usuarioId)
+        .sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em));
 }
