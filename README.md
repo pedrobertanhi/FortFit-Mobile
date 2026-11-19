@@ -140,6 +140,12 @@ O aplicativo mantém usuários, sessões, produtos, carrinho e pedidos exclusiva
 - cadastro e gerenciamento de produtos;
 - dashboard do vendedor com vendas, faturamento e estoque.
 
+## Pagamentos com Mercado Pago
+
+O checkout utiliza o **Mercado Pago Checkout Pro**: o aplicativo abre a página segura do provedor e só grava o pedido no SQLite após a confirmação de pagamento aprovada. Nenhum Access Token ou dado de cartão fica no app.
+
+A API fica em [`server/`](server/README.md). Antes de testar, configure o Access Token, a chave de assinatura do webhook e uma URL pública no servidor. No aplicativo, informe somente `EXPO_PUBLIC_FORTFIT_API_URL`.
+
 ## Tecnologias
 
 - React Native
@@ -148,6 +154,8 @@ O aplicativo mantém usuários, sessões, produtos, carrinho e pedidos exclusiva
 - React Navigation
 - Figma
 - Git e GitHub
+- Mercado Pago Checkout Pro
+- Node.js e Express (API de pagamentos)
 
 ## Situação atual
 

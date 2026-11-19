@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
     Alert,
     Image,
+    Linking,
     KeyboardAvoidingView,
     Platform,
     SafeAreaView,
@@ -15,6 +16,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../../constants/theme';
 import { useLoja } from '../../context/LojaContext';
+import { consultarPagamentoMercadoPago, criarCheckoutMercadoPago, gerarReferenciaPedido } from '../../services/mercadoPago';
 
 const PRODUTO_EXEMPLO = {
     idProduto: 1,
@@ -116,7 +118,7 @@ function EtapasCheckout() {
 export default function PagamentoScreen(props) {
     const navigation = props.navigation;
     const produtoRecebido = props.route?.params?.produto;
-    const { finalizarPedido } = useLoja();
+    const { finalizarPedido, usuario } = useLoja();
 
     const produto = {
         idProduto:
@@ -140,11 +142,8 @@ export default function PagamentoScreen(props) {
             PRODUTO_EXEMPLO.fotoProduto,
     };
 
-    const [tipoCartao, setTipoCartao] = useState('credito');
-    const [numeroCartao, setNumeroCartao] = useState('');
-    const [nomeCartao, setNomeCartao] = useState('');
-    const [validadeCartao, setValidadeCartao] = useState('');
-    const [codigoSeguranca, setCodigoSeguranca] = useState('');
+    const [pagando, setPagando] = useState(false);
+    const [pedidoMercadoPago, setPedidoMercadoPago] = useState(null);
 
     const [cep, setCep] = useState('');
     const [mostrarEndereco, setMostrarEndereco] =
@@ -169,44 +168,6 @@ export default function PagamentoScreen(props) {
             .replace('.', ',')}`;
     }
 
-    function alterarNumeroCartao(texto) {
-        const somenteNumeros = texto
-            .replace(/\D/g, '')
-            .slice(0, 16);
-
-        const numeroFormatado = somenteNumeros
-            .replace(/(.{4})/g, '$1 ')
-            .trim();
-
-        setNumeroCartao(numeroFormatado);
-    }
-
-    function alterarValidade(texto) {
-        const somenteNumeros = texto
-            .replace(/\D/g, '')
-            .slice(0, 4);
-
-        if (somenteNumeros.length > 2) {
-            setValidadeCartao(
-                `${somenteNumeros.slice(
-                    0,
-                    2
-                )}/${somenteNumeros.slice(2)}`
-            );
-            return;
-        }
-
-        setValidadeCartao(somenteNumeros);
-    }
-
-    function alterarCodigoSeguranca(texto) {
-        const somenteNumeros = texto
-            .replace(/\D/g, '')
-            .slice(0, 4);
-
-        setCodigoSeguranca(somenteNumeros);
-    }
-
     function alterarCep(texto) {
         const somenteNumeros = texto
             .replace(/\D/g, '')
@@ -224,85 +185,118 @@ export default function PagamentoScreen(props) {
         setMostrarEndereco(somenteNumeros.length === 8);
     }
 
-    function gerarNumeroPedido() {
-        const numeroAleatorio = Math.floor(
-            100000 + Math.random() * 900000
-        );
-
-        return `FF-${numeroAleatorio}`;
-    }
-
     function voltar() {
         if (navigation) {
             navigation.goBack();
         }
     }
 
-    async function finalizarPagamento() {
-        const numerosCartao = numeroCartao.replace(
-            /\D/g,
-            ''
-        ).length;
-
-        const numerosValidade = validadeCartao.replace(
-            /\D/g,
-            ''
-        ).length;
-
-        const numerosCodigo = codigoSeguranca.replace(
-            /\D/g,
-            ''
-        ).length;
-
+    async function iniciarPagamento() {
         const numerosCep = cep.replace(/\D/g, '').length;
-
-        const cartaoValido =
-            numerosCartao === 16 &&
-            nomeCartao.trim().length >= 3 &&
-            numerosValidade === 4 &&
-            numerosCodigo >= 3;
-
         const enderecoValido =
             numerosCep === 8 &&
             rua.trim() !== '' &&
             bairro.trim() !== '' &&
             numeroEndereco.trim() !== '';
 
-        if (!cartaoValido || !enderecoValido) {
+        if (!enderecoValido) {
             Alert.alert(
-                'Campos obrigatórios',
-                'Preencha corretamente todos os campos marcados com *. O complemento é opcional.'
+                'Endereço obrigatório',
+                'Preencha corretamente o CEP, a rua, o bairro e o número de entrega.'
             );
             return;
         }
 
-        const numeroPedido = gerarNumeroPedido();
+        const numeroPedido = gerarReferenciaPedido();
+        setPagando(true);
 
         try {
-            await finalizarPedido({
-                numeroPedido,
-                formaPagamento: tipoCartao,
-                endereco: {
-                    cep,
-                    rua,
-                    bairro,
-                    numero: numeroEndereco,
-                    complemento,
-                },
+            const preferencia = await criarCheckoutMercadoPago({
+                referencia: numeroPedido,
+                produto,
+                emailComprador: usuario?.email,
             });
 
-            if (navigation) {
-                navigation.navigate('PagamentoConfirmado', {
-                    numeroPedido,
+            if (!preferencia.initPoint) {
+                throw new Error('O Mercado Pago não retornou o link de pagamento.');
+            }
+
+            setPedidoMercadoPago({ numeroPedido });
+
+            const podeAbrir = await Linking.canOpenURL(preferencia.initPoint);
+            if (!podeAbrir) throw new Error('Não foi possível abrir o checkout seguro.');
+
+            await Linking.openURL(preferencia.initPoint);
+        } catch (erro) {
+            Alert.alert(
+                'Não foi possível iniciar o pagamento',
+                erro.message || 'Verifique a conexão e tente novamente.'
+            );
+        } finally {
+            setPagando(false);
+        }
+    }
+
+    async function verificarPagamento() {
+        if (!pedidoMercadoPago) return;
+        setPagando(true);
+
+        try {
+            const pagamento = await consultarPagamentoMercadoPago(
+                pedidoMercadoPago.numeroPedido
+            );
+
+            if (pagamento.status === 'approved') {
+                const pedidoRegistrado = await finalizarPedido({
+                    numeroPedido: pedidoMercadoPago.numeroPedido,
+                    formaPagamento: 'mercado_pago',
+                    pagamentoId: pagamento.paymentId,
+                    statusPagamento: pagamento.status,
+                    endereco: {
+                        cep,
+                        rua,
+                        bairro,
+                        numero: numeroEndereco,
+                        complemento,
+                    },
+                });
+
+                if (!pedidoRegistrado) {
+                    throw new Error('Não foi possível registrar o pedido local.');
+                }
+
+                setPedidoMercadoPago(null);
+                navigation?.navigate('PagamentoConfirmado', {
+                    numeroPedido: pedidoMercadoPago.numeroPedido,
                     produto,
                     valorTotal,
                 });
+                return;
             }
+
+            const mensagens = {
+                pending: 'O pagamento ainda está pendente. Conclua no Mercado Pago e consulte novamente.',
+                in_process: 'O pagamento está em análise. Consulte novamente em alguns instantes.',
+                rejected: 'O pagamento foi recusado. Você pode iniciar uma nova tentativa.',
+                cancelled: 'O pagamento foi cancelado. Você pode iniciar uma nova tentativa.',
+                not_found: 'Ainda não encontramos um pagamento para este pedido.',
+            };
+
+            if (pagamento.status === 'rejected' || pagamento.status === 'cancelled') {
+                setPedidoMercadoPago(null);
+            }
+
+            Alert.alert(
+                'Pagamento não confirmado',
+                mensagens[pagamento.status] || 'O pagamento ainda não foi aprovado.'
+            );
         } catch (erro) {
             Alert.alert(
-                'Não foi possível finalizar',
-                'Tente novamente em alguns instantes.'
+                'Não foi possível consultar o pagamento',
+                erro.message || 'Tente novamente em alguns instantes.'
             );
+        } finally {
+            setPagando(false);
         }
     }
 
@@ -379,117 +373,20 @@ export default function PagamentoScreen(props) {
                     </View>
 
                     <Text style={styles.tituloSecao}>
-                        Forma de pagamento
+                        Pagamento seguro
                     </Text>
 
-                    <View style={styles.opcoesCartao}>
-                        <TouchableOpacity
-                            style={[
-                                styles.opcaoCartao,
-                                tipoCartao === 'credito' &&
-                                    styles.opcaoCartaoAtiva,
-                            ]}
-                            onPress={() =>
-                                setTipoCartao('credito')
-                            }
-                        >
-                            <Feather
-                                name={
-                                    tipoCartao === 'credito'
-                                        ? 'check-circle'
-                                        : 'circle'
-                                }
-                                size={19}
-                                color={
-                                    tipoCartao === 'credito'
-                                        ? COLORS.primary
-                                        : COLORS.textSecondary
-                                }
-                            />
-
-                            <Text
-                                style={
-                                    styles.textoOpcaoCartao
-                                }
-                            >
-                                Crédito
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[
-                                styles.opcaoCartao,
-                                tipoCartao === 'debito' &&
-                                    styles.opcaoCartaoAtiva,
-                            ]}
-                            onPress={() =>
-                                setTipoCartao('debito')
-                            }
-                        >
-                            <Feather
-                                name={
-                                    tipoCartao === 'debito'
-                                        ? 'check-circle'
-                                        : 'circle'
-                                }
-                                size={19}
-                                color={
-                                    tipoCartao === 'debito'
-                                        ? COLORS.primary
-                                        : COLORS.textSecondary
-                                }
-                            />
-
-                            <Text
-                                style={
-                                    styles.textoOpcaoCartao
-                                }
-                            >
-                                Débito
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <CampoFormulario
-                        rotulo="Número do cartão"
-                        valor={numeroCartao}
-                        aoAlterar={alterarNumeroCartao}
-                        dica="0000 0000 0000 0000"
-                        teclado="numeric"
-                        tamanhoMaximo={19}
-                    />
-
-                    <CampoFormulario
-                        rotulo="Nome no cartão"
-                        valor={nomeCartao}
-                        aoAlterar={setNomeCartao}
-                        dica="NOME COMPLETO"
-                        maiusculo
-                    />
-
-                    <View style={styles.linhaCampos}>
-                        <View style={styles.campoMetade}>
-                            <CampoFormulario
-                                rotulo="Validade"
-                                valor={validadeCartao}
-                                aoAlterar={alterarValidade}
-                                dica="MM/AA"
-                                teclado="numeric"
-                                tamanhoMaximo={5}
-                            />
+                    <View style={styles.avisoMercadoPago}>
+                        <View style={styles.iconeMercadoPago}>
+                            <Feather name="lock" size={20} color={COLORS.primary} />
                         </View>
-
-                        <View style={styles.campoMetade}>
-                            <CampoFormulario
-                                rotulo="Código de segurança"
-                                valor={codigoSeguranca}
-                                aoAlterar={
-                                    alterarCodigoSeguranca
-                                }
-                                dica="000"
-                                teclado="numeric"
-                                tamanhoMaximo={4}
-                            />
+                        <View style={styles.textosMercadoPago}>
+                            <Text style={styles.tituloMercadoPago}>
+                                Checkout do Mercado Pago
+                            </Text>
+                            <Text style={styles.descricaoMercadoPago}>
+                                Os dados do cartão serão informados apenas no ambiente seguro do Mercado Pago.
+                            </Text>
                         </View>
                     </View>
 
@@ -592,15 +489,23 @@ export default function PagamentoScreen(props) {
                     </View>
 
                     <TouchableOpacity
-                        style={styles.botaoFinalizar}
-                        onPress={finalizarPagamento}
+                        style={[
+                            styles.botaoFinalizar,
+                            pagando && styles.botaoFinalizarDesabilitado,
+                        ]}
+                        onPress={
+                            pedidoMercadoPago
+                                ? verificarPagamento
+                                : iniciarPagamento
+                        }
+                        disabled={pagando}
                     >
-                        <Text
-                            style={
-                                styles.textoBotaoFinalizar
-                            }
-                        >
-                            FINALIZAR PAGAMENTO
+                        <Text style={styles.textoBotaoFinalizar}>
+                            {pagando
+                                ? 'AGUARDE...'
+                                : pedidoMercadoPago
+                                    ? 'VERIFICAR PAGAMENTO'
+                                    : 'PAGAR COM MERCADO PAGO'}
                         </Text>
                     </TouchableOpacity>
                 </ScrollView>
@@ -806,6 +711,39 @@ const styles = StyleSheet.create({
         marginTop: -6,
         marginBottom: 16,
     },
+    avisoMercadoPago: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        padding: 16,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        borderRadius: SIZES.radius,
+        backgroundColor: COLORS.surface,
+    },
+    iconeMercadoPago: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: COLORS.background,
+    },
+    textosMercadoPago: {
+        flex: 1,
+    },
+    tituloMercadoPago: {
+        color: COLORS.text,
+        fontSize: SIZES.body,
+        fontWeight: '700',
+        marginBottom: 4,
+    },
+    descricaoMercadoPago: {
+        color: COLORS.textSecondary,
+        fontSize: SIZES.small,
+        lineHeight: 18,
+    },
     resumoValores: {
         padding: 16,
         marginTop: 4,
@@ -857,6 +795,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 18,
         borderRadius: SIZES.radius,
         backgroundColor: COLORS.primary,
+    },
+    botaoFinalizarDesabilitado: {
+        opacity: 0.65,
     },
     textoBotaoFinalizar: {
         color: COLORS.background,
