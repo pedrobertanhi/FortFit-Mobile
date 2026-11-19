@@ -51,14 +51,22 @@ export async function inicializarBanco() {
         PRAGMA journal_mode = WAL;
         CREATE TABLE IF NOT EXISTS produtos (id TEXT PRIMARY KEY NOT NULL, nome TEXT NOT NULL, marca TEXT NOT NULL, categoria TEXT NOT NULL, descricao TEXT NOT NULL, preco REAL NOT NULL, estoque INTEGER NOT NULL, foto_tipo TEXT, foto_valor TEXT);
         CREATE TABLE IF NOT EXISTS carrinho_itens (produto_id TEXT PRIMARY KEY NOT NULL, quantidade INTEGER NOT NULL, FOREIGN KEY (produto_id) REFERENCES produtos(id));
-        CREATE TABLE IF NOT EXISTS pedidos (id TEXT PRIMARY KEY NOT NULL, criado_em TEXT NOT NULL, forma_pagamento TEXT NOT NULL, cep TEXT NOT NULL, rua TEXT NOT NULL, bairro TEXT NOT NULL, numero TEXT NOT NULL, complemento TEXT, total REAL NOT NULL);
+        CREATE TABLE IF NOT EXISTS pedidos (id TEXT PRIMARY KEY NOT NULL, criado_em TEXT NOT NULL, forma_pagamento TEXT NOT NULL, cep TEXT NOT NULL, rua TEXT NOT NULL, bairro TEXT NOT NULL, numero TEXT NOT NULL, complemento TEXT, total REAL NOT NULL, usuario_id TEXT, pagamento_id TEXT, status_pagamento TEXT);
         CREATE TABLE IF NOT EXISTS pedido_itens (id INTEGER PRIMARY KEY AUTOINCREMENT, pedido_id TEXT NOT NULL, produto_id TEXT NOT NULL, nome_produto TEXT NOT NULL, preco_unitario REAL NOT NULL, quantidade INTEGER NOT NULL, FOREIGN KEY (pedido_id) REFERENCES pedidos(id));
         CREATE TABLE IF NOT EXISTS usuarios (id TEXT PRIMARY KEY NOT NULL, nome TEXT NOT NULL, email TEXT UNIQUE NOT NULL, telefone TEXT, senha TEXT NOT NULL, perfil TEXT NOT NULL CHECK(perfil IN ('cliente', 'admin')), criado_em TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS sessao (id INTEGER PRIMARY KEY CHECK(id = 1), usuario_id TEXT NOT NULL, FOREIGN KEY (usuario_id) REFERENCES usuarios(id));
     `);
     const colunasPedidos = await db.getAllAsync('PRAGMA table_info(pedidos)');
-    if (!colunasPedidos.some((coluna) => coluna.name === 'usuario_id')) {
-        await db.execAsync('ALTER TABLE pedidos ADD COLUMN usuario_id TEXT');
+    const colunasDePagamento = [
+        ['usuario_id', 'TEXT'],
+        ['pagamento_id', 'TEXT'],
+        ['status_pagamento', 'TEXT'],
+    ];
+
+    for (const [nome, tipo] of colunasDePagamento) {
+        if (!colunasPedidos.some((coluna) => coluna.name === nome)) {
+            await db.execAsync(`ALTER TABLE pedidos ADD COLUMN ${nome} ${tipo}`);
+        }
     }
     const quantidadeProdutos = await db.getFirstAsync('SELECT COUNT(*) AS total FROM produtos');
     if (Number(quantidadeProdutos?.total) === 0) {
@@ -132,5 +140,5 @@ export async function adicionarItemAoCarrinho(produto, quantidade) { const db = 
 export async function alterarQuantidadeNoCarrinho(id, quantidade) { const db = await obterBanco(); if (quantidade <= 0) { await db.runAsync('DELETE FROM carrinho_itens WHERE produto_id = ?', id); return; } const produto = await db.getFirstAsync('SELECT estoque FROM produtos WHERE id = ?', id); const quantidadeFinal = Math.min(quantidade, Number(produto?.estoque ?? 0)); if (quantidadeFinal <= 0) { await db.runAsync('DELETE FROM carrinho_itens WHERE produto_id = ?', id); return; } await db.runAsync('UPDATE carrinho_itens SET quantidade = ? WHERE produto_id = ?', quantidadeFinal, id); }
 export async function removerItemDoCarrinho(id) { const db = await obterBanco(); await db.runAsync('DELETE FROM carrinho_itens WHERE produto_id = ?', id); }
 export async function limparCarrinhoNoBanco() { const db = await obterBanco(); await db.runAsync('DELETE FROM carrinho_itens'); }
-export async function registrarPedido(dados) { const db = await obterBanco(); const itens = await listarCarrinho(); if (itens.length === 0) return false; const total = itens.reduce((acumulado, item) => acumulado + item.produto.preco * item.quantidade, 0); await db.withTransactionAsync(async () => { await db.runAsync('INSERT INTO pedidos (id, criado_em, forma_pagamento, cep, rua, bairro, numero, complemento, total, usuario_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', dados.numeroPedido, new Date().toISOString(), dados.formaPagamento, dados.endereco.cep, dados.endereco.rua, dados.endereco.bairro, dados.endereco.numero, dados.endereco.complemento, total, dados.usuarioId); for (const item of itens) { await db.runAsync('INSERT INTO pedido_itens (pedido_id, produto_id, nome_produto, preco_unitario, quantidade) VALUES (?, ?, ?, ?, ?)', dados.numeroPedido, item.produto.id, item.produto.nome, item.produto.preco, item.quantidade); await db.runAsync('UPDATE produtos SET estoque = MAX(estoque - ?, 0) WHERE id = ?', item.quantidade, item.produto.id); } await db.runAsync('DELETE FROM carrinho_itens'); }); return true; }
+export async function registrarPedido(dados) { const db = await obterBanco(); const itens = await listarCarrinho(); if (itens.length === 0) return false; const total = itens.reduce((acumulado, item) => acumulado + item.produto.preco * item.quantidade, 0); await db.withTransactionAsync(async () => { await db.runAsync('INSERT INTO pedidos (id, criado_em, forma_pagamento, cep, rua, bairro, numero, complemento, total, usuario_id, pagamento_id, status_pagamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', dados.numeroPedido, new Date().toISOString(), dados.formaPagamento, dados.endereco.cep, dados.endereco.rua, dados.endereco.bairro, dados.endereco.numero, dados.endereco.complemento, total, dados.usuarioId, dados.pagamentoId || null, dados.statusPagamento || 'approved'); for (const item of itens) { await db.runAsync('INSERT INTO pedido_itens (pedido_id, produto_id, nome_produto, preco_unitario, quantidade) VALUES (?, ?, ?, ?, ?)', dados.numeroPedido, item.produto.id, item.produto.nome, item.produto.preco, item.quantidade); await db.runAsync('UPDATE produtos SET estoque = MAX(estoque - ?, 0) WHERE id = ?', item.quantidade, item.produto.id); } await db.runAsync('DELETE FROM carrinho_itens'); }); return true; }
 export async function listarPedidosDoUsuario(usuarioId) { const db = await obterBanco(); const pedidos = await db.getAllAsync('SELECT * FROM pedidos WHERE usuario_id = ? ORDER BY criado_em DESC', usuarioId); return Promise.all(pedidos.map(async (pedido) => ({ ...pedido, total: Number(pedido.total), itens: await db.getAllAsync('SELECT nome_produto, preco_unitario, quantidade FROM pedido_itens WHERE pedido_id = ?', pedido.id) }))); }
