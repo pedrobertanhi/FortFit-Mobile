@@ -282,6 +282,10 @@ export default function PagamentoScreen(props) {
                 not_found: 'Ainda não encontramos um pagamento para este pedido.',
             };
 
+            if (pagamento.status === 'rejected' || pagamento.status === 'cancelled') {
+                setPedidoMercadoPago(null);
+            }
+
             Alert.alert(
                 'Pagamento não confirmado',
                 mensagens[pagamento.status] || 'O pagamento ainda não foi aprovado.'
