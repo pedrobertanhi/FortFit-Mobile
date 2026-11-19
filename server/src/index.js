@@ -76,14 +76,15 @@ app.post('/api/webhooks/mercado-pago', async (req, res, next) => {
     }
 });
 
-app.get('/pagamento/:resultado(sucesso|pendente|falha)', (req, res) => {
+app.get('/pagamento/:resultado', (req, res) => {
     const mensagens = {
         sucesso: 'Pagamento aprovado. Volte ao aplicativo FortFit para confirmar seu pedido.',
         pendente: 'Seu pagamento está pendente. Volte ao aplicativo FortFit e consulte o status mais tarde.',
         falha: 'O pagamento não foi concluído. Você pode tentar novamente pelo aplicativo FortFit.',
     };
 
-    res.type('html').send(`<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FortFit</title><body style="margin:0;background:#101010;color:#fff;font-family:Arial,sans-serif;display:grid;min-height:100vh;place-items:center"><main style="max-width:420px;padding:32px;text-align:center"><div style="color:#B7FF00;font-size:44px">✓</div><h1>FortFit</h1><p style="line-height:1.6;color:#ddd">${mensagens[req.params.resultado]}</p></main></body></html>`);
+    const mensagem = mensagens[req.params.resultado] || 'Retorne ao aplicativo FortFit para acompanhar o seu pedido.';
+    res.type('html').send(`<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FortFit</title><body style="margin:0;background:#101010;color:#fff;font-family:Arial,sans-serif;display:grid;min-height:100vh;place-items:center"><main style="max-width:420px;padding:32px;text-align:center"><div style="color:#B7FF00;font-size:44px">✓</div><h1>FortFit</h1><p style="line-height:1.6;color:#ddd">${mensagem}</p></main></body></html>`);
 });
 
 app.use((erro, _req, res, _next) => {
