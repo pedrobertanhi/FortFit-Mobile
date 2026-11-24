@@ -119,7 +119,7 @@ function EtapasCheckout() {
 export default function PagamentoScreen(props) {
     const navigation = props.navigation;
     const produtoRecebido = props.route?.params?.produto;
-    const { finalizarPedido, usuario } = useLoja();
+    const { finalizarPedido, removerPagamentoPendente, salvarPagamentoPendente, usuario } = useLoja();
 
     const produto = {
         idProduto:
@@ -209,9 +209,17 @@ export default function PagamentoScreen(props) {
         }
 
         const numeroPedido = gerarReferenciaPedido();
+        const endereco = {
+            cep,
+            rua,
+            bairro,
+            numero: numeroEndereco,
+            complemento,
+        };
         setPagando(true);
 
         try {
+            await salvarPagamentoPendente({ numeroPedido, endereco });
             const preferencia = await criarCheckoutMercadoPago({
                 referencia: numeroPedido,
                 produto,
@@ -229,6 +237,7 @@ export default function PagamentoScreen(props) {
 
             await Linking.openURL(preferencia.initPoint);
         } catch (erro) {
+            await removerPagamentoPendente(numeroPedido);
             Alert.alert(
                 'Não foi possível iniciar o pagamento',
                 erro.message || 'Verifique a conexão e tente novamente.'
@@ -266,6 +275,7 @@ export default function PagamentoScreen(props) {
                     throw new Error('Não foi possível registrar o pedido local.');
                 }
 
+                await removerPagamentoPendente(pedidoMercadoPago.numeroPedido);
                 setPedidoMercadoPago(null);
                 navigation?.navigate('PagamentoConfirmado', {
                     numeroPedido: pedidoMercadoPago.numeroPedido,
@@ -284,6 +294,7 @@ export default function PagamentoScreen(props) {
             };
 
             if (pagamento.status === 'rejected' || pagamento.status === 'cancelled') {
+                await removerPagamentoPendente(pedidoMercadoPago.numeroPedido);
                 setPedidoMercadoPago(null);
             }
 
