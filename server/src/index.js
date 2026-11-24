@@ -40,7 +40,6 @@ app.post('/api/checkout/preferences', async (req, res, next) => {
         const preferencia = await criarPreferencia({
             externalReference: req.body?.externalReference,
             itens: req.body?.itens,
-            emailComprador: req.body?.emailComprador,
         });
 
         res.status(201).json(preferencia);
