@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Alert,
+    AppState,
     Image,
     Linking,
     KeyboardAvoidingView,
@@ -238,7 +239,7 @@ export default function PagamentoScreen(props) {
     }
 
     async function verificarPagamento() {
-        if (!pedidoMercadoPago) return;
+        if (!pedidoMercadoPago || pagando) return;
         setPagando(true);
 
         try {
@@ -299,6 +300,16 @@ export default function PagamentoScreen(props) {
             setPagando(false);
         }
     }
+
+    useEffect(() => {
+        const assinatura = AppState.addEventListener('change', (estado) => {
+            if (estado === 'active' && pedidoMercadoPago && !pagando) {
+                verificarPagamento();
+            }
+        });
+
+        return () => assinatura.remove();
+    }, [pedidoMercadoPago, pagando, cep, rua, bairro, numeroEndereco, complemento]);
 
     return (
         <SafeAreaView style={styles.areaSegura}>
