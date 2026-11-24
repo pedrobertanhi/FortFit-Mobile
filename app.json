@@ -13,7 +13,10 @@
           "photosPermission": "Permita que o FortFit acesse suas fotos para cadastrar imagens dos produtos.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-sqlite",
+      "expo-status-bar",
+      "expo-font"
     ],
     "ios": {
       "supportsTablet": true
