@@ -62,7 +62,7 @@ async function requisitar(caminho, { method = 'GET', body } = {}) {
     return dados;
 }
 
-export async function criarPreferencia({ externalReference, itens, emailComprador }) {
+export async function criarPreferencia({ externalReference, itens }) {
     validarReferencia(externalReference);
     const publicBaseUrl = process.env.PUBLIC_BASE_URL?.replace(/\/$/, '');
     const preference = {
@@ -70,7 +70,6 @@ export async function criarPreferencia({ externalReference, itens, emailComprado
         external_reference: externalReference,
         statement_descriptor: 'FORTFIT',
         payment_methods: { installments: 12 },
-        payer: emailComprador ? { email: String(emailComprador).trim().toLowerCase() } : undefined,
     };
 
     if (publicBaseUrl) {
