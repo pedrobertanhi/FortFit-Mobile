@@ -83,10 +83,16 @@ export async function criarPreferencia({ externalReference, itens }) {
     }
 
     const resposta = await requisitar('/checkout/preferences', { method: 'POST', body: preference });
+    const ambienteTeste = process.env.MERCADO_PAGO_ENVIRONMENT !== 'production';
+    const sandboxInitPoint = resposta.sandbox_init_point || null;
+    const initPoint = ambienteTeste && sandboxInitPoint
+        ? sandboxInitPoint
+        : resposta.init_point;
+
     return {
         preferenceId: resposta.id,
-        initPoint: resposta.init_point,
-        sandboxInitPoint: resposta.sandbox_init_point || null,
+        initPoint,
+        sandboxInitPoint,
     };
 }
 
