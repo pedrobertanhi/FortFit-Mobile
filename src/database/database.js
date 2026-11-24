@@ -55,6 +55,7 @@ export async function inicializarBanco() {
         CREATE TABLE IF NOT EXISTS pedido_itens (id INTEGER PRIMARY KEY AUTOINCREMENT, pedido_id TEXT NOT NULL, produto_id TEXT NOT NULL, nome_produto TEXT NOT NULL, preco_unitario REAL NOT NULL, quantidade INTEGER NOT NULL, FOREIGN KEY (pedido_id) REFERENCES pedidos(id));
         CREATE TABLE IF NOT EXISTS usuarios (id TEXT PRIMARY KEY NOT NULL, nome TEXT NOT NULL, email TEXT UNIQUE NOT NULL, telefone TEXT, senha TEXT NOT NULL, perfil TEXT NOT NULL CHECK(perfil IN ('cliente', 'admin')), criado_em TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS sessao (id INTEGER PRIMARY KEY CHECK(id = 1), usuario_id TEXT NOT NULL, FOREIGN KEY (usuario_id) REFERENCES usuarios(id));
+        CREATE TABLE IF NOT EXISTS pagamentos_pendentes (id TEXT PRIMARY KEY NOT NULL, usuario_id TEXT NOT NULL, cep TEXT NOT NULL, rua TEXT NOT NULL, bairro TEXT NOT NULL, numero TEXT NOT NULL, complemento TEXT, criado_em TEXT NOT NULL, FOREIGN KEY (usuario_id) REFERENCES usuarios(id));
     `);
     const colunasPedidos = await db.getAllAsync('PRAGMA table_info(pedidos)');
     const colunasDePagamento = [
@@ -113,6 +114,7 @@ export async function excluirContaUsuario(usuarioId) {
     await db.withTransactionAsync(async () => {
         await db.runAsync('DELETE FROM pedido_itens WHERE pedido_id IN (SELECT id FROM pedidos WHERE usuario_id = ?)', usuarioId);
         await db.runAsync('DELETE FROM pedidos WHERE usuario_id = ?', usuarioId);
+        await db.runAsync('DELETE FROM pagamentos_pendentes WHERE usuario_id = ?', usuarioId);
         await db.runAsync('DELETE FROM sessao WHERE usuario_id = ?', usuarioId);
         await db.runAsync('DELETE FROM usuarios WHERE id = ?', usuarioId);
         await db.runAsync('DELETE FROM carrinho_itens');
@@ -140,5 +142,40 @@ export async function adicionarItemAoCarrinho(produto, quantidade) { const db = 
 export async function alterarQuantidadeNoCarrinho(id, quantidade) { const db = await obterBanco(); if (quantidade <= 0) { await db.runAsync('DELETE FROM carrinho_itens WHERE produto_id = ?', id); return; } const produto = await db.getFirstAsync('SELECT estoque FROM produtos WHERE id = ?', id); const quantidadeFinal = Math.min(quantidade, Number(produto?.estoque ?? 0)); if (quantidadeFinal <= 0) { await db.runAsync('DELETE FROM carrinho_itens WHERE produto_id = ?', id); return; } await db.runAsync('UPDATE carrinho_itens SET quantidade = ? WHERE produto_id = ?', quantidadeFinal, id); }
 export async function removerItemDoCarrinho(id) { const db = await obterBanco(); await db.runAsync('DELETE FROM carrinho_itens WHERE produto_id = ?', id); }
 export async function limparCarrinhoNoBanco() { const db = await obterBanco(); await db.runAsync('DELETE FROM carrinho_itens'); }
+export async function salvarPagamentoPendente(dados) {
+    const db = await obterBanco();
+    await db.runAsync(
+        'INSERT OR REPLACE INTO pagamentos_pendentes (id, usuario_id, cep, rua, bairro, numero, complemento, criado_em) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        dados.numeroPedido,
+        dados.usuarioId,
+        dados.endereco.cep,
+        dados.endereco.rua,
+        dados.endereco.bairro,
+        dados.endereco.numero,
+        dados.endereco.complemento || null,
+        new Date().toISOString()
+    );
+}
+
+export async function listarPagamentosPendentesDoUsuario(usuarioId) {
+    const db = await obterBanco();
+    const linhas = await db.getAllAsync('SELECT * FROM pagamentos_pendentes WHERE usuario_id = ? ORDER BY criado_em DESC', usuarioId);
+    return linhas.map((linha) => ({
+        numeroPedido: linha.id,
+        endereco: {
+            cep: linha.cep,
+            rua: linha.rua,
+            bairro: linha.bairro,
+            numero: linha.numero,
+            complemento: linha.complemento || '',
+        },
+    }));
+}
+
+export async function removerPagamentoPendente(numeroPedido) {
+    const db = await obterBanco();
+    await db.runAsync('DELETE FROM pagamentos_pendentes WHERE id = ?', numeroPedido);
+}
+
 export async function registrarPedido(dados) { const db = await obterBanco(); const itens = await listarCarrinho(); if (itens.length === 0) return false; const total = itens.reduce((acumulado, item) => acumulado + item.produto.preco * item.quantidade, 0); await db.withTransactionAsync(async () => { await db.runAsync('INSERT INTO pedidos (id, criado_em, forma_pagamento, cep, rua, bairro, numero, complemento, total, usuario_id, pagamento_id, status_pagamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', dados.numeroPedido, new Date().toISOString(), dados.formaPagamento, dados.endereco.cep, dados.endereco.rua, dados.endereco.bairro, dados.endereco.numero, dados.endereco.complemento, total, dados.usuarioId, dados.pagamentoId || null, dados.statusPagamento || 'approved'); for (const item of itens) { await db.runAsync('INSERT INTO pedido_itens (pedido_id, produto_id, nome_produto, preco_unitario, quantidade) VALUES (?, ?, ?, ?, ?)', dados.numeroPedido, item.produto.id, item.produto.nome, item.produto.preco, item.quantidade); await db.runAsync('UPDATE produtos SET estoque = MAX(estoque - ?, 0) WHERE id = ?', item.quantidade, item.produto.id); } await db.runAsync('DELETE FROM carrinho_itens'); }); return true; }
 export async function listarPedidosDoUsuario(usuarioId) { const db = await obterBanco(); const pedidos = await db.getAllAsync('SELECT * FROM pedidos WHERE usuario_id = ? ORDER BY criado_em DESC', usuarioId); return Promise.all(pedidos.map(async (pedido) => ({ ...pedido, total: Number(pedido.total), itens: await db.getAllAsync('SELECT nome_produto, preco_unitario, quantidade FROM pedido_itens WHERE pedido_id = ?', pedido.id) }))); }
